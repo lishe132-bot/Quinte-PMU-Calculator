@@ -8,7 +8,7 @@ Deauville Handicap Classe 2 - 1900m PSF (2020-2026)
 يتابع جميع التجمعات والسباقات بنفس المواصفات مع حساب دقيق لتوزيع المركز السنوي
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List, Dict, Tuple, Optional
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import datetime
@@ -34,27 +34,23 @@ class Horse:
 class Race:
     """سباق واحد بجميع البيانات"""
     race_id: str
-    race_date: str  # YYYY-MM-DD
-    race_time: str  # HH:MM
+    race_date: str
+    race_time: str
     race_name: str
-    race_class: str  # Classe 2
-    distance: int  # 1900
-    track: str  # PSF
-    hippodrome: str  # Deauville
+    race_class: str
+    distance: int
+    track: str
+    hippodrome: str
     weather: str
     wind_speed: float
     wind_direction: str
     number_of_horses: int
     total_allocation: Decimal
-    
-    # النتيجة
     first: Horse
     second: Horse
     third: Horse
     fourth: Horse
     fifth: Horse
-    
-    # الجوائز
     total_bets: Decimal
     pmu_commission: Decimal
     net_pool: Decimal
@@ -252,11 +248,15 @@ class YearlyAnalyzer:
         report.append(f"Deauville - Handicap Classe 2 - 1900m PSF")
         report.append("=" * 200)
         
+        if not self.races:
+            report.append(f"   لا توجد سباقات في السنة {self.year}")
+            report.append("\n" + "=" * 200)
+            return "\n".join(report)
+        
         # الملخص العام
         report.append(f"\n📈 ملخص عام:")
         report.append(f"   إجمالي السباقات في السنة: {len(self.races)}")
-        report.append(f"   من {self.races[0].race_date} إلى {self.races[-1].race_date}" 
-                     if self.races else "")
+        report.append(f"   من {self.races[0].race_date} إلى {self.races[-1].race_date}")
         
         # إجمالي الرهانات والجوائز
         total_bets = sum(r.total_bets for r in self.races)
@@ -269,7 +269,7 @@ class YearlyAnalyzer:
         report.append(f"   إجمالي الصندوق الصافي: {total_pool:,.2f}€")
         
         # أفضل المدربين
-        report.append(f"\n👨‍🎓 أفضل 10 مدربين في {self.year}:")
+        report.append(f"\n👨‍🎓 أفضل المدربين في {self.year}:")
         report.append("-" * 200)
         trainers = self.get_top_5_trainers()
         for i, trainer in enumerate(trainers, 1):
@@ -282,7 +282,7 @@ class YearlyAnalyzer:
             )
         
         # أفضل الملاك
-        report.append(f"\n👑 أفضل 10 ملاك في {self.year}:")
+        report.append(f"\n👑 أفضل الملاك في {self.year}:")
         report.append("-" * 200)
         owners = self.get_top_5_owners()
         for i, owner in enumerate(owners, 1):
@@ -295,7 +295,7 @@ class YearlyAnalyzer:
             )
         
         # أفضل الفرسان
-        report.append(f"\n🐴 أفضل 10 فرسان في {self.year}:")
+        report.append(f"\n🐴 أفضل الفرسان في {self.year}:")
         report.append("-" * 200)
         jockeys = self.get_top_5_jockeys()
         for i, jockey in enumerate(jockeys, 1):
@@ -339,17 +339,17 @@ class ComprehensiveRaceDatabase:
         """توليد جميع التقارير السنوية"""
         return {
             year: self.yearly_analyzers[year].generate_yearly_report()
-            for year in range(2020, 2027) if len(self.yearly_analyzers[year].races) > 0
+            for year in range(2020, 2027)
         }
 
 
 def load_complete_historical_data() -> ComprehensiveRaceDatabase:
-    """تحميل البيانات التاريخية الكاملة من البحث"""
+    """تحميل البيانات التاريخية الكاملة"""
     
     db = ComprehensiveRaceDatabase()
     
     # 2020 - Grand Handicap de la Piste Fibrée - 20/10/2020
-    db.add_race(Race(
+    race_2020 = Race(
         race_id="DEAUVILLE_20201020_001",
         race_date="2020-10-20",
         race_time="14:30",
@@ -371,10 +371,11 @@ def load_complete_historical_data() -> ComprehensiveRaceDatabase:
         total_bets=Decimal("800000.00"),
         pmu_commission=Decimal("256000.00"),
         net_pool=Decimal("544000.00")
-    ))
+    )
+    db.add_race(race_2020)
     
     # 2022 - Prix du Manoir de la Salamandre - 29/11/2022
-    db.add_race(Race(
+    race_2022 = Race(
         race_id="DEAUVILLE_20221129_001",
         race_date="2022-11-29",
         race_time="15:00",
@@ -396,10 +397,11 @@ def load_complete_historical_data() -> ComprehensiveRaceDatabase:
         total_bets=Decimal("900000.00"),
         pmu_commission=Decimal("288000.00"),
         net_pool=Decimal("612000.00")
-    ))
+    )
+    db.add_race(race_2022)
     
     # 2024 - Prix de l'Opération Overlord - 09/04/2024
-    db.add_race(Race(
+    race_2024 = Race(
         race_id="DEAUVILLE_20240409_001",
         race_date="2024-04-09",
         race_time="14:45",
@@ -421,10 +423,11 @@ def load_complete_historical_data() -> ComprehensiveRaceDatabase:
         total_bets=Decimal("950000.00"),
         pmu_commission=Decimal("304000.00"),
         net_pool=Decimal("646000.00")
-    ))
+    )
+    db.add_race(race_2024)
     
     # 2025 - Prix du Secours Populaire - 05/08/2025
-    db.add_race(Race(
+    race_2025_1 = Race(
         race_id="DEAUVILLE_20250805_001",
         race_date="2025-08-05",
         race_time="16:00",
@@ -446,10 +449,11 @@ def load_complete_historical_data() -> ComprehensiveRaceDatabase:
         total_bets=Decimal("1000000.00"),
         pmu_commission=Decimal("320000.00"),
         net_pool=Decimal("680000.00")
-    ))
+    )
+    db.add_race(race_2025_1)
     
     # 2025 - Sumbe Grand Handicap - 24/08/2025
-    db.add_race(Race(
+    race_2025_2 = Race(
         race_id="DEAUVILLE_20250824_001",
         race_date="2025-08-24",
         race_time="14:15",
@@ -471,10 +475,11 @@ def load_complete_historical_data() -> ComprehensiveRaceDatabase:
         total_bets=Decimal("1050000.00"),
         pmu_commission=Decimal("336000.00"),
         net_pool=Decimal("714000.00")
-    ))
+    )
+    db.add_race(race_2025_2)
     
     # 2026 - Prix de Cherbourg - 23/01/2026
-    db.add_race(Race(
+    race_2026_1 = Race(
         race_id="DEAUVILLE_20260123_001",
         race_date="2026-01-23",
         race_time="15:30",
@@ -496,10 +501,11 @@ def load_complete_historical_data() -> ComprehensiveRaceDatabase:
         total_bets=Decimal("950000.00"),
         pmu_commission=Decimal("304000.00"),
         net_pool=Decimal("646000.00")
-    ))
+    )
+    db.add_race(race_2026_1)
     
     # 2026 - Prix de la Villa Lucie - 27/08/2026
-    db.add_race(Race(
+    race_2026_2 = Race(
         race_id="DEAUVILLE_20260827_001",
         race_date="2026-08-27",
         race_time="20:15",
@@ -521,7 +527,8 @@ def load_complete_historical_data() -> ComprehensiveRaceDatabase:
         total_bets=Decimal("1100000.00"),
         pmu_commission=Decimal("352000.00"),
         net_pool=Decimal("748000.00")
-    ))
+    )
+    db.add_race(race_2026_2)
     
     return db
 
@@ -542,24 +549,25 @@ def main():
     # توليد التقارير السنوية
     yearly_reports = db.generate_all_yearly_reports()
     
-    for year, report in sorted(yearly_reports.items()):
-        print(report)
+    for year in sorted(yearly_reports.keys()):
+        print(yearly_reports[year])
     
     # حفظ التقرير الشامل
     comprehensive_data = {
         "analysis_date": datetime.now().isoformat(),
         "total_races": len(db.races),
         "races": [r.to_dict() for r in sorted(db.races, key=lambda x: x.race_date)],
-        "yearly_summaries": {
-            year: {
+        "yearly_summaries": {}
+    }
+    
+    for year in range(2020, 2027):
+        if len(db.yearly_analyzers[year].races) > 0:
+            comprehensive_data["yearly_summaries"][year] = {
                 "races_count": len(db.yearly_analyzers[year].races),
                 "top_trainers": db.yearly_analyzers[year].get_top_5_trainers(10),
                 "top_owners": db.yearly_analyzers[year].get_top_5_owners(10),
                 "top_jockeys": db.yearly_analyzers[year].get_top_5_jockeys(10)
             }
-            for year in range(2020, 2027) if len(db.yearly_analyzers[year].races) > 0
-        }
-    }
     
     with open("comprehensive_race_analysis.json", "w", encoding="utf-8") as f:
         json.dump(comprehensive_data, f, indent=2, ensure_ascii=False)
